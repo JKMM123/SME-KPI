@@ -1,63 +1,65 @@
-# .NET / C# specific
-bin/
-obj/
-.vs/
-.vscode/
-*.csproj.user
-*.sln.user
-*.suo
-*.user
-appsettings.*.json
-!appsettings.Development.json
-!appsettings.json
+# ============================================================================
+# .NET / C# Backend
+# ============================================================================
+backend/bin/
+backend/obj/
+backend/.vs/
+backend/.vscode/
+backend/*.csproj.user
+backend/*.sln.user
+backend/*.suo
+backend/*.user
+backend/Properties/launchSettings.json
+backend/.DS_Store
 
-# Build results
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
-[Rr]eleases/
-x64/
-x86/
-[Ww][Ii][Nn]32/
-[Aa][Rr][Mm]/
-[Aa][Rr][Mm]64/
-bld/
-[Bb]in/
-[Oo]bj/
-[Ll]og/
-[Ll]ogs/
+# .NET nuget/packages
+*.nupkg
+*.nupkg.sha512
+*.snupkg
+.nuget/
 
-# Node.js / npm / pnpm specific
-node_modules/
-dist/
-.pnpm-debug.log*
-*.tsbuildinfo
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-pnpm-error.log*
-lerna-debug.log*
+# Build logs
+/logs/
+*.log
 
-# Frontend build artifacts
+# ============================================================================
+# Node.js / Frontend (Quasar)
+# ============================================================================
+frontend/node_modules/
 frontend/dist/
 frontend/.quasar/
+frontend/.pnpm-debug.log*
+frontend/*.tsbuildinfo
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+frontend/pnpm-error.log*
+frontend/lerna-debug.log*
 
-# IDE and editor files
+# Environment
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# OS
+frontend/.DS_Store
+frontend/.DS_Store?
+frontend/._*
+
+# ============================================================================
+# IDE and Editor
+# ============================================================================
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-.DS_Store
-Thumbs.db
+*.code-workspace
 
-# Environment files
-.env
-.env.local
-.env.*.local
-
-# OS specific
+# ============================================================================
+# OS Specific (Linux/Mac/Windows)
+# ============================================================================
 .DS_Store
 .DS_Store?
 ._*
@@ -65,3 +67,9 @@ Thumbs.db
 .Trashes
 ehthumbs.db
 Thumbs.db
+desktop.ini
+
+# Root level environment files
+.env
+.env.local
+.env.*.local
