@@ -9,7 +9,7 @@ namespace SmeKpiDashboard.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class ExpensesController : ControllerBase
+public class ExpensesController : BaseApiController
 {
     private readonly IExpensesService _service;
 
@@ -18,14 +18,7 @@ public class ExpensesController : ControllerBase
         _service = service;
     }
 
-    private Guid GetUserId()
-    {
-        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier)
-            ?? User.FindFirstValue("sub");
-        if (string.IsNullOrEmpty(userIdClaim))
-            throw new UnauthorizedAccessException("User ID claim is missing. Please log in again.");
-        return Guid.Parse(userIdClaim);
-    }
+    // `GetUserId` provided by BaseApiController (hardened parsing + validation)
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
