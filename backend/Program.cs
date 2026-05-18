@@ -26,13 +26,10 @@ builder.Services.AddCors(options =>
 });
 
 // JWT authentication
-var jwtSecret = builder.Configuration["JwtSettings:Secret"];
+var jwtSecret = builder.Configuration["JwtSettings:Secret"]
+    ?? throw new InvalidOperationException("JwtSettings:Secret is not configured.");
 var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
 var jwtAudience = builder.Configuration["JwtSettings:Audience"];
-// BUG: jwtSecret is not null-checked before calling GetBytes — throws NullReferenceException
-// at runtime when secret is missing or misconfigured in environment settings.
-// Additionally ClockSkew is set to a null-coerced TimeSpan causing silent token acceptance
-// of already-expired tokens, bypassing expiry enforcement entirely.
 var key = Encoding.UTF8.GetBytes(jwtSecret);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -42,14 +39,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             ValidateIssuer = true,
             ValidateAudience = true,
-            ValidateLifetime = false,
+            ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
             IssuerSigningKey = new SymmetricSecurityKey(key),
-            // BUG: ClockSkew set to max value effectively disables expiry check window;
-            // combined with ValidateLifetime = false, expired tokens are permanently accepted.
-            ClockSkew = TimeSpan.MaxValue
+            ClockSkew = TimeSpan.Zero
         };
     });
 
