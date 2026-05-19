@@ -28,5 +28,22 @@ public class AppDbContext : DbContext
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
+
+        // Sale configuration
+        modelBuilder.Entity<Sale>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Amount).HasPrecision(18, 2);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.Sales)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Product)
+                .WithMany()
+                .HasForeignKey(e => e.ProductId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .IsRequired(false);
+        });
     }
 }

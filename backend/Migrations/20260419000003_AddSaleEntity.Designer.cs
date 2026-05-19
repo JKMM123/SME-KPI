@@ -8,10 +8,10 @@ namespace SmeKpiDashboard.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     [Migration("20260419000003_AddSaleEntity")]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    partial class AddSaleEntity
     {
         /// <inheritdoc />
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
