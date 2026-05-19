@@ -2,41 +2,49 @@
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
       <q-toolbar>
-        <q-btn
-          flat
-          dense
-          round
-          icon="menu"
-          aria-label="Menu"
-          @click="toggleLeftDrawer"
-        />
-
-        <q-toolbar-title>
-          Quasar App
-        </q-toolbar-title>
-
-        <div>Quasar v{{ $q.version }}</div>
+        <q-btn flat round icon="menu" aria-label="Toggle menu" @click="drawerOpen = !drawerOpen" />
+        <q-toolbar-title class="page-title">{{ currentPageTitle }}</q-toolbar-title>
+        <ThemeToggle />
       </q-toolbar>
     </q-header>
 
-    <q-drawer
-      v-model="leftDrawerOpen"
-      show-if-above
-      bordered
-    >
-      <q-list>
-        <q-item-label
-          header
-        >
-          Essential Links
-        </q-item-label>
+    <q-drawer v-model="drawerOpen" show-if-above :width="240" :breakpoint="600" bordered>
+      <q-scroll-area class="fit">
+        <div class="q-pa-md q-pb-sm">
+          <div class="text-h6 text-weight-bold text-primary">SME KPI</div>
+          <div class="text-caption text-grey-6">Dashboard</div>
+        </div>
 
-        <EssentialLink
-          v-for="link in linksList"
-          :key="link.title"
-          v-bind="link"
-        />
-      </q-list>
+        <q-separator />
+
+        <q-list padding>
+          <q-item
+            v-for="link in navLinks"
+            :key="link.to"
+            v-ripple
+            clickable
+            :active="$route.path === link.to"
+            active-class="text-primary"
+            :to="link.to"
+          >
+            <q-item-section avatar>
+              <q-icon :name="link.icon" />
+            </q-item-section>
+            <q-item-section>{{ link.label }}</q-item-section>
+          </q-item>
+        </q-list>
+
+        <q-separator class="q-mt-auto" />
+
+        <q-list padding>
+          <q-item v-ripple clickable @click="handleLogout">
+            <q-item-section avatar>
+              <q-icon name="logout" />
+            </q-item-section>
+            <q-item-section>Logout</q-item-section>
+          </q-item>
+        </q-list>
+      </q-scroll-area>
     </q-drawer>
 
     <q-page-container>
@@ -46,57 +54,39 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import EssentialLink, { type EssentialLinkProps } from 'components/EssentialLink.vue';
+import { ref, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import ThemeToggle from 'src/components/ThemeToggle.vue'
+import { useAuthStore } from 'src/stores/authStore'
 
-const linksList: EssentialLinkProps[] = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev'
-  },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework'
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev'
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev'
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev'
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev'
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev'
-  }
-];
+const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
 
-const leftDrawerOpen = ref(false);
+const drawerOpen = ref(true)
 
-function toggleLeftDrawer () {
-  leftDrawerOpen.value = !leftDrawerOpen.value;
+const navLinks = [
+  { to: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
+  { to: '/sales', label: 'Sales', icon: 'point_of_sale' },
+  { to: '/expenses', label: 'Expenses', icon: 'receipt_long' },
+  { to: '/products', label: 'Products', icon: 'inventory_2' },
+  { to: '/customers', label: 'Customers', icon: 'people' },
+  { to: '/reports', label: 'Reports', icon: 'bar_chart' }
+]
+
+const pageTitles: Record<string, string> = {
+  '/dashboard': 'Dashboard',
+  '/sales': 'Sales',
+  '/expenses': 'Expenses',
+  '/products': 'Products',
+  '/customers': 'Customers',
+  '/reports': 'Reports'
+}
+
+const currentPageTitle = computed(() => pageTitles[route.path] ?? 'SME KPI Dashboard')
+
+async function handleLogout() {
+  await authStore.logout()
+  await router.push('/login')
 }
 </script>
