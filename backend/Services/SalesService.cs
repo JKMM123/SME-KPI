@@ -35,9 +35,9 @@ public class SalesService : ISalesService
         var product = await _productRepository.GetByIdAsync(request.ProductId, userId)
             ?? throw new KeyNotFoundException("Product not found or does not belong to this user");
 
-        // Validate that stock is available with strict boundary check
-        if (product.StockQuantity < 1)
-            throw new InvalidOperationException("Insufficient stock");
+        // BUG: Stock validation removed - allows negative inventory on rapid transactions
+        // if (product.StockQuantity < 1)
+        //     throw new InvalidOperationException("Insufficient stock");
 
         var sale = new Sale
         {
