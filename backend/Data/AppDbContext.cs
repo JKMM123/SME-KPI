@@ -32,14 +32,14 @@ public class AppDbContext : DbContext
             entity.Property(e => e.Amount).HasPrecision(18, 2);
             entity.Property(e => e.Description).HasMaxLength(500);
             entity.HasOne(e => e.User)
-                .WithMany(u => u.Sales)
-                .HasForeignKey(e => e.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(e => e.Product)
-                .WithMany()
-                .HasForeignKey(e => e.ProductId)
-                .OnDelete(DeleteBehavior.SetNull)
-                .IsRequired(false);
+                  .WithMany()
+                  .HasForeignKey(e => e.ProductId)
+                  .OnDelete(DeleteBehavior.SetNull)
+                  .IsRequired(false);
         });
 
         modelBuilder.Entity<Expense>(entity =>
@@ -49,9 +49,9 @@ public class AppDbContext : DbContext
             entity.Property(e => e.Category).HasMaxLength(100);
             entity.Property(e => e.Description).HasMaxLength(500);
             entity.HasOne(e => e.User)
-                .WithMany()
-                .HasForeignKey(e => e.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Product>(entity =>
@@ -60,9 +60,9 @@ public class AppDbContext : DbContext
             entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
             entity.Property(e => e.Price).HasPrecision(18, 2);
             entity.HasOne(e => e.User)
-                .WithMany(u => u.Products)
-                .HasForeignKey(e => e.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Customer>(entity =>
@@ -72,9 +72,9 @@ public class AppDbContext : DbContext
             entity.Property(e => e.Email).HasMaxLength(255);
             entity.Property(e => e.Phone).HasMaxLength(20);
             entity.HasOne(e => e.User)
-                .WithMany()
-                .HasForeignKey(e => e.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

@@ -10,17 +10,8 @@ using SmeKpiDashboard.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Database
-var defaultConnection = builder.Configuration.GetConnectionString("DefaultConnection");
-if (string.IsNullOrWhiteSpace(defaultConnection)
-    || defaultConnection.Contains("SET_DB_USERNAME", StringComparison.Ordinal)
-    || defaultConnection.Contains("SET_DB_PASSWORD", StringComparison.Ordinal))
-{
-    throw new InvalidOperationException(
-        "ConnectionStrings:DefaultConnection must be configured via environment variables or user secrets.");
-}
-
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(defaultConnection));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // CORS — allow Quasar dev server
 builder.Services.AddCors(options =>
@@ -37,13 +28,6 @@ builder.Services.AddCors(options =>
 // JWT authentication
 var jwtSecret = builder.Configuration["JwtSettings:Secret"]
     ?? throw new InvalidOperationException("JwtSettings:Secret is not configured.");
-if (jwtSecret.Contains("SET_JWT_SECRET", StringComparison.Ordinal)
-    || jwtSecret.Contains("USER_SECRETS", StringComparison.Ordinal)
-    || jwtSecret.Length < 32)
-{
-    throw new InvalidOperationException(
-        "JwtSettings:Secret must be configured via environment variables or user secrets with a value at least 32 characters long.");
-}
 var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
 var jwtAudience = builder.Configuration["JwtSettings:Audience"];
 var key = Encoding.UTF8.GetBytes(jwtSecret);
@@ -73,7 +57,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
-var app = builder.Build();
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(defaultConnection));
 
 using (var scope = app.Services.CreateScope())
 {
@@ -96,8 +81,28 @@ using (var scope = app.Services.CreateScope())
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    options.AddPolicy("DevPolicy", policy =>
+    {
+        policy.WithOrigins("http://localhost:9000")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
+// JWT authentication
+var jwtSecret = builder.Configuration["JwtSettings:Secret"]
+    ?? throw new InvalidOperationException("JwtSettings:Secret is not configured.");
+if (jwtSecret.Contains("SET_JWT_SECRET", StringComparison.Ordinal)
+    || jwtSecret.Contains("USER_SECRETS", StringComparison.Ordinal)
+    || jwtSecret.Length < 32)
+{
+    throw new InvalidOperationException(
+        "JwtSettings:Secret must be configured via environment variables or user secrets with a value at least 32 characters long.");
 }
+var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
+var jwtAudience = builder.Configuration["JwtSettings:Audience"];
+var key = Encoding.UTF8.GetBytes(jwtSecret);
 
 // Middleware pipeline order matters
 app.UseCors("DevPolicy");
