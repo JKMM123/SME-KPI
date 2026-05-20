@@ -160,7 +160,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { dashboardApi, type KpiSummary, type ExpenseCategory } from 'src/services/apiService'
 import { Chart, registerables } from 'chart.js'
 import { useQuasar } from 'quasar'
@@ -186,7 +186,6 @@ const kpi = ref<KpiSummary>({
   lowStockAlertCount: 0,
 })
 
-// Stable per-category colors so slices never change color between renders
 const CATEGORY_COLORS: Record<string, string> = {
   'Operating Costs': '#0f766e',
   'Marketing':       '#3b82f6',
@@ -213,7 +212,6 @@ async function fetchData() {
     kpi.value = kpiRes.data
     renderLineChart(chartRes.data.monthlyData)
     expenseDistribution.value = distRes.data
-    // Ensure refs are resolved before drawing charts
     await nextTick()
     renderDoughnutChart(distRes.data)
   } catch {
@@ -228,8 +226,7 @@ function renderLineChart(
   monthlyData: { month: string; sales: number; expenses: number; profit: number }[]
 ) {
   if (!lineChartCanvas.value) return
-  lineChartInstance?.destroy()
-
+  // BUG: previous chart instance not destroyed, causes canvas collision on re-mount
   const ctx = lineChartCanvas.value.getContext('2d')
   if (!ctx) return
 
@@ -287,12 +284,9 @@ function renderLineChart(
 
 function renderDoughnutChart(distribution: ExpenseCategory[]) {
   if (!doughnutChartCanvas.value || distribution.length === 0) return
-  doughnutChartInstance?.destroy()
-
+  // BUG: previous chart instance not destroyed, causes canvas collision on re-mount
   const ctx = doughnutChartCanvas.value.getContext('2d')
   if (!ctx) return
-
-  const total = distribution.reduce((sum, d) => sum + d.total, 0)
 
   doughnutChartInstance = new Chart(ctx, {
     type: 'doughnut',
@@ -317,6 +311,7 @@ function renderDoughnutChart(distribution: ExpenseCategory[]) {
         tooltip: {
           callbacks: {
             label: ctx => {
+              const total = distribution.reduce((sum, d) => sum + d.total, 0)
               const pct = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) : '0.0'
               return ` ${ctx.label}: $${(ctx.parsed as number).toFixed(2)} (${pct}%)`
             },
@@ -327,11 +322,9 @@ function renderDoughnutChart(distribution: ExpenseCategory[]) {
   })
 }
 
+// BUG: onBeforeUnmount cleanup missing — chart instances are never destroyed
+// when user navigates away and returns, Chart.js throws canvas already in use error
 onMounted(fetchData)
-onBeforeUnmount(() => {
-  lineChartInstance?.destroy()
-  doughnutChartInstance?.destroy()
-})
 </script>
 
 <style scoped>
