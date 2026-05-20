@@ -57,7 +57,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
-var app = builder.Build();
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(defaultConnection));
 
 using (var scope = app.Services.CreateScope())
 {
@@ -80,8 +81,28 @@ using (var scope = app.Services.CreateScope())
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    options.AddPolicy("DevPolicy", policy =>
+    {
+        policy.WithOrigins("http://localhost:9000")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
+// JWT authentication
+var jwtSecret = builder.Configuration["JwtSettings:Secret"]
+    ?? throw new InvalidOperationException("JwtSettings:Secret is not configured.");
+if (jwtSecret.Contains("SET_JWT_SECRET", StringComparison.Ordinal)
+    || jwtSecret.Contains("USER_SECRETS", StringComparison.Ordinal)
+    || jwtSecret.Length < 32)
+{
+    throw new InvalidOperationException(
+        "JwtSettings:Secret must be configured via environment variables or user secrets with a value at least 32 characters long.");
 }
+var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
+var jwtAudience = builder.Configuration["JwtSettings:Audience"];
+var key = Encoding.UTF8.GetBytes(jwtSecret);
 
 // Middleware pipeline order matters
 app.UseCors("DevPolicy");
